@@ -2,9 +2,6 @@ package hk.ust.csit5970;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Iterator;
-
-import javax.naming.Context;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -67,11 +64,11 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 					BIGRAM.set(previous_word, w);
 					context.write(BIGRAM, ONE);
 					BIGRAM.set(previous_word, "\t");
-        			context.write(BIGRAM, ONE);
+					context.write(BIGRAM, ONE);
 					previous_word = w;
 				}
 				BIGRAM.set(previous_word, "\t");
-        		context.write(BIGRAM, ONE);
+				context.write(BIGRAM, ONE);
 			}
 		}
 	}
@@ -85,21 +82,16 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 		// Reuse objects.
 		private final static FloatWritable VALUE = new FloatWritable();
 
-		private String currentWord = null;
-        private int total = 0;
-
 		@Override
 		public void reduce(PairOfStrings key, Iterable<IntWritable> values,
 				Context context) throws IOException, InterruptedException {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
-
-			/*
 			int sum = 0;
 			int total = 0;
 			String currentWord = key.getLeftElement();
- 
+
        	 	// 如果是 (w1, \t)，记录总出现次数
         	if (key.getRightElement().equals("\t")) {
             	total = 0;
@@ -118,36 +110,7 @@ public class BigramFrequencyPairs extends Configured implements Tool {
         	    float probability = (float) sum / total;
         	    VALUE.set(probability);
         	    context.write(key, VALUE);
-        	}*/
-			// If it's a unigram count (w1, *)
-
-			String left = key.getLeftElement();
-            String right = key.getRightElement();
-            if (right.equals("*")) {
-                currentWord = left;
-                total = 0;
-                for (IntWritable val : values) {
-                    total += val.get();
-                }
-            } 
-            // Otherwise it's a bigram (w1, w2)
-            else {
-                if (!left.equals(currentWord)) {
-                    context.getCounter("Reducer", "Word mismatch").increment(1);
-                    return;
-                }
-                
-                int sum = 0;
-                for (IntWritable val : values) {
-                    sum += val.get();
-                }
-                
-                if (total > 0) {
-                    float probability = (float) sum / total;
-                    VALUE.set(probability);
-                    context.write(key, VALUE);
-                }
-            }
+        	}
 		}
 	}
 	
