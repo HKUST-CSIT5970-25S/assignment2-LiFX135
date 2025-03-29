@@ -66,11 +66,11 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 					}
 					BIGRAM.set(previous_word, w);
 					context.write(BIGRAM, ONE);
-					BIGRAM.set(prevWord, "\t");
+					BIGRAM.set(previous_word, "\t");
         			context.write(BIGRAM, ONE);
 					previous_word = w;
 				}
-				BIGRAM.set(prevWord, "\t");
+				BIGRAM.set(previous_word, "\t");
         		context.write(BIGRAM, ONE);
 			}
 		}
