@@ -2,6 +2,7 @@ package hk.ust.csit5970;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import javax.naming.Context;
 
@@ -50,15 +51,12 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 		public void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
 			String line = ((Text) value).toString();
-			LOG.info("Processing line: " + line);  // 记录原始行
 			String[] words = line.trim().split("\\s+");
-			LOG.info("Split into words: " + Arrays.toString(words));  // 记录分割结果
 			
 			/*
 			 * TODO: Your implementation goes here.
 			 */
 			if (words.length > 1){
-				LOG.info("Valid line with words: " + words.length);  // 记录有效行
 				String previous_word = words[0];
 				for (int i = 1; i < words.length; i++) {
 					String w = words[i];
@@ -68,15 +66,8 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 					}
 					BIGRAM.set(previous_word, w);
 					context.write(BIGRAM, ONE);
-					BIGRAM.set(previous_word, "\t");
-					context.write(BIGRAM, ONE);
 					previous_word = w;
 				}
-				BIGRAM.set(previous_word, "\t");
-				context.write(BIGRAM, ONE);
-			}
-			else {
-				LOG.info("Skipped line (words.length <= 1)");  // 记录跳过原因
 			}
 		}
 	}
