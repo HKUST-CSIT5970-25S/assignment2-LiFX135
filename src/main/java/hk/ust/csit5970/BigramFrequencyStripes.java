@@ -99,7 +99,7 @@ public class BigramFrequencyStripes extends Configured implements Tool {
 				SUM_STRIPES.plus(iter.next());
 			}
 			
-			int totalcount = 0;
+			int totalCount = 0;
 			for (int count : SUM_STRIPES.values()) {
 				totalCount += count;
 			}
