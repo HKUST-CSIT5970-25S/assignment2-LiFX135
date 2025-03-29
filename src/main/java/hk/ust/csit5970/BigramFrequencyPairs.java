@@ -50,7 +50,7 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 		public void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
 			String line = ((Text) value).toString();
-			String[] words = line.trim().split("[^a-zA-Z']+");
+			String[] words = line.trim().split("\\s+");
 			
 			/*
 			 * TODO: Your implementation goes here.
