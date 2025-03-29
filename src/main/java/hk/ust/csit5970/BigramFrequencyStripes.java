@@ -103,6 +103,8 @@ public class BigramFrequencyStripes extends Configured implements Tool {
 			for (int count : SUM_STRIPES.values()) {
 				totalCount += count;
 			}
+			BIGRAM.set(first_w, "");
+	        FREQ.set(totalCount);
 
 	        for (Entry<String, Integer> mapElement : SUM_STRIPES.entrySet()) { 
 	            String second_w = (String) mapElement.getKey(); 
