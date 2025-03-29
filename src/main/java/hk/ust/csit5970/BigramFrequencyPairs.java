@@ -63,8 +63,12 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 					}
 					BIGRAM.set(previous_word, w);
 					context.write(BIGRAM, ONE);
+					BIGRAM.set(previous_word, "\t");
+					context.write(BIGRAM, ONE);
 					previous_word = w;
 				}
+				BIGRAM.set(previous_word, "\t");
+				context.write(BIGRAM, ONE);
 			}
 		}
 	}
@@ -84,17 +88,29 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			int sum = 0;
 			int total = 0;
 			String currentWord = key.getLeftElement();
 
-			for (IntWritable val : values) {
-				sum += val.get();
-				total += val.get();
-			}
-
-			float probability = (float)sum / total;
-			VALUE.set(probability);
-			context.write(key, VALUE);
+       	 	// 如果是 (w1, \t)，记录总出现次数
+        	if (key.getRightElement().equals("\t")) {
+            	total = 0;
+            	for (IntWritable val : values) {
+            	    total += val.get();
+            	}
+				VALUE.set(total);
+            	context.write(key, VALUE); // 输出 (w1, \t) → total
+        	} 
+        	// 否则是 (w1, w2)，计算概率
+        	else {
+        	    sum = 0;
+        	    for (IntWritable val : values) {
+        	        sum += val.get();
+        	    }
+        	    float probability = (float) sum / total;
+        	    VALUE.set(probability);
+        	    context.write(key, VALUE);
+        	}
 		}
 	}
 	
