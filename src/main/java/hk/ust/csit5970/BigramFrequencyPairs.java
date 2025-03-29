@@ -105,7 +105,7 @@ public class BigramFrequencyPairs extends Configured implements Tool {
         	} 
         	// 否则是 (w1, w2)，计算概率
         	else {
-				if (totalCount != 0){
+				if (totat != 0){
         	    	float probability = (float) sum / total;
         	    	VALUE.set(probability);
         	    	context.write(key, VALUE);
