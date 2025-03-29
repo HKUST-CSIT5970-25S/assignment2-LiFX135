@@ -120,6 +120,9 @@ public class BigramFrequencyPairs extends Configured implements Tool {
         	    context.write(key, VALUE);
         	}*/
 			// If it's a unigram count (w1, *)
+
+			String left = key.getLeftElement();
+            String right = key.getRightElement();
             if (right.equals("*")) {
                 currentWord = left;
                 total = 0;
