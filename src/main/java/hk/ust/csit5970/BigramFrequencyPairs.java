@@ -51,7 +51,7 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 		public void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
 			String line = ((Text) value).toString();
-			String[] words = line.trim().split("\\s+");
+			String[] words = line.trim().split("\\b[a-zA-Z]+(?:'[a-zA-Z]+)?\\b");
 			
 			/*
 			 * TODO: Your implementation goes here.
@@ -66,8 +66,12 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 					}
 					BIGRAM.set(previous_word, w);
 					context.write(BIGRAM, ONE);
+					BIGRAM.set(prevWord, "\t");
+        			context.write(BIGRAM, ONE);
 					previous_word = w;
 				}
+				BIGRAM.set(prevWord, "\t");
+        		context.write(BIGRAM, ONE);
 			}
 		}
 	}
