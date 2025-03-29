@@ -107,7 +107,7 @@ public class BigramFrequencyStripes extends Configured implements Tool {
 	        for (Entry<String, Integer> mapElement : SUM_STRIPES.entrySet()) { 
 	            String second_w = (String) mapElement.getKey(); 
 	            int sum = (int) mapElement.getValue();
-				float probability = (float) sum / totalcount;
+				float probability = (float) sum / totalCount;
 	            BIGRAM.set(first_w, second_w);
 	            FREQ.set(probability);
 	            context.write(BIGRAM, FREQ);
