@@ -3,6 +3,8 @@ package hk.ust.csit5970;
 import java.io.IOException;
 import java.util.Arrays;
 
+import javax.naming.Context;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -79,6 +81,7 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 
 		// Reuse objects.
 		private final static FloatWritable VALUE = new FloatWritable();
+		private int total = 0;
 
 		@Override
 		public void reduce(PairOfStrings key, Iterable<IntWritable> values,
@@ -87,27 +90,26 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 			 * TODO: Your implementation goes here.
 			 */
 			int sum = 0;
-			int total = 0;
 			String currentWord = key.getLeftElement();
+
+
+        	for (IntWritable val : values) {
+          	  	sum += val.get();
+        	}
 
        	 	// 如果是 (w1, )，记录总出现次数
         	if (key.getRightElement().equals("")) {
-            	total = 0;
-            	for (IntWritable val : values) {
-            	    total += val.get();
-            	}
+            	total = sum;
 				VALUE.set(total);
             	context.write(key, VALUE); // 输出 (w1, ) → total
         	} 
         	// 否则是 (w1, w2)，计算概率
         	else {
-        	    sum = 0;
-        	    for (IntWritable val : values) {
-        	        sum += val.get();
-        	    }
-        	    float probability = (float) sum / total;
-        	    VALUE.set(probability);
-        	    context.write(key, VALUE);
+				if (totalCount != 0){
+        	    	float probability = (float) sum / total;
+        	    	VALUE.set(probability);
+        	    	context.write(key, VALUE);
+				}
         	}
 		}
 	}
