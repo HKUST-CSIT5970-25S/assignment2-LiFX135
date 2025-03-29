@@ -48,7 +48,7 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 		public void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
 			String line = ((Text) value).toString();
-			String[] words = line.trim().split("\\s+");
+			String[] words = line.trim().split("[^a-zA-Z']+");
 			
 			/*
 			 * TODO: Your implementation goes here.
@@ -63,12 +63,10 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 					}
 					BIGRAM.set(previous_word, w);
 					context.write(BIGRAM, ONE);
-					BIGRAM.set(previous_word, "\t");
+					BIGRAM.set(previous_word, "");
 					context.write(BIGRAM, ONE);
 					previous_word = w;
 				}
-				BIGRAM.set(previous_word, "\t");
-				context.write(BIGRAM, ONE);
 			}
 		}
 	}
@@ -92,14 +90,14 @@ public class BigramFrequencyPairs extends Configured implements Tool {
 			int total = 0;
 			String currentWord = key.getLeftElement();
 
-       	 	// 如果是 (w1, \t)，记录总出现次数
-        	if (key.getRightElement().equals("\t")) {
+       	 	// 如果是 (w1, )，记录总出现次数
+        	if (key.getRightElement().equals("")) {
             	total = 0;
             	for (IntWritable val : values) {
             	    total += val.get();
             	}
 				VALUE.set(total);
-            	context.write(key, VALUE); // 输出 (w1, \t) → total
+            	context.write(key, VALUE); // 输出 (w1, ) → total
         	} 
         	// 否则是 (w1, w2)，计算概率
         	else {
