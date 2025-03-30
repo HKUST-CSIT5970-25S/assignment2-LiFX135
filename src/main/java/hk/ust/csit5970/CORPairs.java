@@ -187,8 +187,8 @@ public class CORPairs extends Configured implements Tool {
 			String word2 = key.getRightElement();
 
 			// Get individual word frequencies from setup()
-			int freq1 = word_total_map.getOrDefault(word1, 0);
-			int freq2 = word_total_map.getOrDefault(word2, 0);
+			int freq1 = word_total_map.get(word1);
+			int freq2 = word_total_map.get(word2);
 
 			// Calculate COR: COR(A,B) = P(A,B) / (P(A)*P(B))
 			if (freq1 > 0 && freq2 > 0) {
