@@ -92,7 +92,6 @@ public class CORPairs extends Configured implements Tool {
 			 */
 			List<String> tokens = new ArrayList<String>();
 			Set<PairOfStrings> pairs = new HashSet<PairOfStrings>();	// set 去重
-			PairOfStrings pair = new PairOfStrings("","");
 			while (doc_tokenizer.hasMoreTokens()) {
     			tokens.add(doc_tokenizer.nextToken());
 			}
@@ -104,15 +103,15 @@ public class CORPairs extends Configured implements Tool {
 					String word2 = tokens.get(j);
 					// 确保顺序
 					if (word1.compareTo(word2) < 0) {
-						pair.set(word1, word2);
+						new PairOfStrings(word1, word2);
 					} else {
-						pair.set(word2, word1);
+						new PairOfStrings(word2, word1);
 					}
 					pairs.add(pair);
 				}
 			}
-			for (PairOfStrings word_pair : pairs) {
-				context.write(word_pair, new IntWritable(1));
+			for (PairOfStrings pair : pairs) {
+				context.write(pair, new IntWritable(1));
 			}
 		}
 	}
