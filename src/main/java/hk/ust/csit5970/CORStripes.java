@@ -15,12 +15,19 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Text;
+
+import hk.ust.csit5970.CORStripes.CORStripesCombiner2;
+import hk.ust.csit5970.CORStripes.CORStripesMapper2;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.text.ParseException;
 import java.util.*;
+
+import javax.naming.Context;
 
 /**
  * Compute the bigram count using "pairs" approach
@@ -43,6 +50,10 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			while (doc_tokenizer.hasMoreTokens()) {
+    			String token = doc_tokenizer.nextToken();
+    			context.write(new Text(token), new IntWritable(1));
+			}
 		}
 	}
 
@@ -56,6 +67,11 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			int sum = 0;
+			for (IntWritable val : values) {
+    			sum += val.get();
+			}
+			context.write(key, new IntWritable(sum));
 		}
 	}
 
@@ -75,6 +91,25 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			List<String> words = new ArrayList<String>(sorted_word_set); // 转 List 遍历
+			for (int i = 0; i < words.size(); i++) {
+				String word = words.get(i);
+				MapWritable stripe = new MapWritable();
+
+				for (int j = i + 1; j < words.size(); j++) {
+					String coWord = words.get(j);
+					if (stripe.containsKey(coWord)) {
+						IntWritable count = (IntWritable) stripe.get(coWord);
+						stripe.put(coWord, new IntWritable(count.get() + 1));
+					} else {
+						stripe.put(coWord, new IntWritable(1));
+					}
+				}
+
+				if (!stripe.isEmpty()) {
+					context.write(word, stripe);
+				}
+			}
 		}
 	}
 
@@ -89,6 +124,21 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			MapWritable mergedStripe = new MapWritable();
+			for (MapWritable stripe : values) {
+				for (Entry<Writable, Writable> entry : stripe.entrySet()) {
+					Text coWord = (Text) entry.getKey();
+					IntWritable count = (IntWritable) entry.getValue();
+					
+					if (mergedStripe.containsKey(coWord)) {
+						IntWritable oldCount = (IntWritable) mergedStripe.get(coWord);
+						mergedStripe.put(coWord, new IntWritable(oldCount.get() + count.get()));
+					} else {
+						mergedStripe.put(coWord, count);
+					}
+				}
+			}
+			context.write(key, mergedStripe);
 		}
 	}
 
@@ -142,6 +192,34 @@ public class CORStripes extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			MapWritable finalStripe = new MapWritable();
+			// 合并所有 stripes（类似 Combiner）
+			for (MapWritable stripe : values) {
+				for (Entry<Writable, Writable> entry : stripe.entrySet()) {
+					Text coWord = (Text) entry.getKey();
+					IntWritable count = (IntWritable) entry.getValue();
+					if (finalStripe.containsKey(coWord)) {
+						IntWritable oldCount = (IntWritable) finalStripe.get(coWord);
+						finalStripe.put(coWord, new IntWritable(oldCount.get() + count.get()));
+					} else {
+						finalStripe.put(coWord, count);
+					}
+				}
+			}
+
+			// 计算 COR
+			String wordA = key.toString();
+			for (Entry<Writable, Writable> entry : finalStripe.entrySet()) {
+				String wordB = ((Text) entry.getKey()).toString();
+				int pairCount = ((IntWritable) entry.getValue()).get();
+				int freqA = word_total_map.getOrDefault(wordA, 0);
+				int freqB = word_total_map.getOrDefault(wordB, 0);
+
+				if (freqA > 0 && freqB > 0) {
+					double cor = (double) pairCount / (freqA * freqB);
+					context.write(new PairOfStrings(wordA, wordB), new DoubleWritable(cor));
+				}
+			}
 		}
 	}
 
