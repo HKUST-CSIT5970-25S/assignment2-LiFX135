@@ -192,8 +192,8 @@ public class CORPairs extends Configured implements Tool {
 
 			// Calculate COR: COR(A,B) = P(A,B) / (P(A)*P(B))
 			if (freq1 > 0 && freq2 > 0) {
-				Float cor = (Float) pair_count / (freq1 * freq2);
-				context.write(key, new FloatWritable(cor));
+				double cor = (double) pair_count / (freq1 * freq2);
+				context.write(key, new DoubleWritable(cor));
 			}
 		}
 	}
