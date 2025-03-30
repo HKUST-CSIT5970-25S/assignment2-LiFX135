@@ -101,11 +101,13 @@ public class CORPairs extends Configured implements Tool {
 				for (int j = i + 1; j < tokens.size(); j++) {
 					String word1 = tokens.get(i);
 					String word2 = tokens.get(j);
-					// 确保顺序
-					PairOfStrings pair = (word1.compareTo(word2) < 0) 
-                    ? new PairOfStrings(word1, word2) 
-                    : new PairOfStrings(word2, word1);
-					pairs.add(pair);
+					// 确保顺序,排除同词
+					if (!word1.equals(word2)){
+						PairOfStrings pair = (word1.compareTo(word2) < 0) 
+						? new PairOfStrings(word1, word2) 
+						: new PairOfStrings(word2, word1);
+						pairs.add(pair);
+					}
 				}
 			}
 			for (PairOfStrings pair : pairs) {
