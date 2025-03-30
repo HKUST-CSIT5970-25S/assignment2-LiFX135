@@ -8,7 +8,6 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
@@ -18,9 +17,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
-
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.w3c.dom.Text;
 import org.apache.hadoop.io.*;
 
 
@@ -28,9 +25,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.*;
-import java.util.Arrays;
-import java.util.HashMap;
+
+import javax.naming.Context;
 
 /**
  * Compute the bigram count using "pairs" approach
@@ -53,6 +53,10 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			while (doc_tokenizer.hasMoreTokens()) {
+    			String token = doc_tokenizer.nextToken();
+    			context.write(new Text(token), new IntWritable(1));
+			}
 		}
 	}
 
@@ -66,6 +70,11 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			int sum = 0;
+			for (IntWritable val : values) {
+    			sum += val.get();
+			}
+			context.write(key, new IntWritable(sum));
 		}
 	}
 
@@ -81,6 +90,24 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			List<String> tokens = new ArrayList<>();
+			while (doc_tokenizer.hasMoreTokens()) {
+    			tokens.add(doc_tokenizer.nextToken());
+			}
+
+			// 保存词对
+			for (int i = 0; i < tokens.size(); i++) {
+				for (int j = i + 1; j < tokens.size(); j++) {
+					String word1 = tokens.get(i);
+					String word2 = tokens.get(j);
+					// 确保顺序
+					if (word1.compareTo(word2) < 0) {
+						context.write(new PairOfStrings(word1, word2), new IntWritable(1));
+					} else {
+						context.write(new PairOfStrings(word2, word1), new IntWritable(1));
+					}
+				}
+			}
 		}
 	}
 
@@ -93,6 +120,12 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			// 合并同键
+			int sum = 0;
+			for (IntWritable val : values) {
+				sum += val.get();
+			}
+			context.write(key, new IntWritable(sum));
 		}
 	}
 
@@ -145,6 +178,23 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
+			int pair_count = 0;
+			for (IntWritable val : values) {
+				pair_count += val.get();
+			}
+
+			String word1 = key.getLeftElement();
+			String word2 = key.getRightElement();
+
+			// Get individual word frequencies from setup()
+			int freq1 = word_total_map.getOrDefault(word1, 0);
+			int freq2 = word_total_map.getOrDefault(word2, 0);
+
+			// Calculate COR: COR(A,B) = P(A,B) / (P(A)*P(B))
+			if (freq1 > 0 && freq2 > 0) {
+				Float cor = (Float) pair_count / (freq1 * freq2);
+				context.write(key, new FloatWritable(cor));
+			}
 		}
 	}
 
