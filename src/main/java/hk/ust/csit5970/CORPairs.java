@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.text.ParseException;
 import java.util.*;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -102,11 +103,9 @@ public class CORPairs extends Configured implements Tool {
 					String word1 = tokens.get(i);
 					String word2 = tokens.get(j);
 					// 确保顺序
-					if (word1.compareTo(word2) < 0) {
-						new PairOfStrings(word1, word2);
-					} else {
-						new PairOfStrings(word2, word1);
-					}
+					PairOfStrings pair = (word1.compareTo(word2) < 0) 
+                    ? new PairOfStrings(word1, word2) 
+                    : new PairOfStrings(word2, word1);
 					pairs.add(pair);
 				}
 			}
