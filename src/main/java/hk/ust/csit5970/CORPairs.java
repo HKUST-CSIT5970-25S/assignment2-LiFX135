@@ -91,22 +91,25 @@ public class CORPairs extends Configured implements Tool {
 			 * TODO: Your implementation goes here.
 			 */
 			List<String> tokens = new ArrayList<String>();
+			Set<PairOfStrings> pairs = new HashSet<PairOfStrings>();	// set 去重
 			while (doc_tokenizer.hasMoreTokens()) {
     			tokens.add(doc_tokenizer.nextToken());
 			}
 
-			// 保存词对
+			// 记录词对
 			for (int i = 0; i < tokens.size(); i++) {
 				for (int j = i + 1; j < tokens.size(); j++) {
 					String word1 = tokens.get(i);
 					String word2 = tokens.get(j);
 					// 确保顺序
-					if (word1.compareTo(word2) < 0) {
-						context.write(new PairOfStrings(word1, word2), new IntWritable(1));
-					} else {
-						context.write(new PairOfStrings(word2, word1), new IntWritable(1));
-					}
+					PairOfStrings pair = (word1.compareTo(word2) < 0) 
+                    ? new PairOfStrings(word1, word2) 
+                    : new PairOfStrings(word2, word1);
+					pairs.add(pair);
 				}
+			}
+			for (PairOfStrings pair : pairs) {
+				context.write(pair, new IntWritable(1));
 			}
 		}
 	}
