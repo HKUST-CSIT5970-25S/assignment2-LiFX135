@@ -5,10 +5,8 @@ import org.apache.commons.cli.Options;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.*;
-import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
@@ -18,9 +16,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
-
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
 
 
@@ -28,9 +23,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.text.ParseException;
 import java.util.*;
-import java.util.Arrays;
-import java.util.HashMap;
+
+import javax.naming.Context;
 
 /**
  * Compute the bigram count using "pairs" approach
@@ -103,14 +99,14 @@ public class CORStripes extends Configured implements Tool {
 					String coWord = words.get(j);
 					if (stripe.containsKey(coWord)) {
 						IntWritable count = (IntWritable) stripe.get(coWord);
-						stripe.put(coWord, new IntWritable(count.get() + 1));
+						stripe.put(new Text(coWord), new IntWritable(count.get() + 1));
 					} else {
-						stripe.put(coWord, new IntWritable(1));
+						stripe.put(new Text(coWord), new IntWritable(1));
 					}
 				}
 
 				if (!stripe.isEmpty()) {
-					context.write(word, stripe);
+					context.write(new Text(word), stripe);
 				}
 			}
 		}
