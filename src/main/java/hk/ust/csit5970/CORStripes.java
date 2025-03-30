@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.*;
+import java.util.Map.Entry;
 
 import javax.naming.Context;
 
@@ -211,8 +212,8 @@ public class CORStripes extends Configured implements Tool {
 			for (Entry<Writable, Writable> entry : finalStripe.entrySet()) {
 				String wordB = ((Text) entry.getKey()).toString();
 				int pairCount = ((IntWritable) entry.getValue()).get();
-				int freqA = word_total_map.getOrDefault(wordA, 0);
-				int freqB = word_total_map.getOrDefault(wordB, 0);
+				int freqA = word_total_map.get(wordA);
+				int freqB = word_total_map.get(wordB);
 
 				if (freqA > 0 && freqB > 0) {
 					double cor = (double) pairCount / (freqA * freqB);
