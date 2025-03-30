@@ -90,7 +90,7 @@ public class CORPairs extends Configured implements Tool {
 			/*
 			 * TODO: Your implementation goes here.
 			 */
-			List<String> tokens = new ArrayList<>();
+			List<String> tokens = new ArrayList<String>();
 			while (doc_tokenizer.hasMoreTokens()) {
     			tokens.add(doc_tokenizer.nextToken());
 			}
